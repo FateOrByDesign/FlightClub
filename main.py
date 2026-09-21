@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 import requests_cache
-from platformdirs import api
 
 from data_manager import DataManager
 from flight_search import FlightSearch
@@ -20,23 +19,9 @@ if not SHEETY_TOKEN: raise ValueError("Error: There was an issue loading the SHE
 if not SERP_API_ENDPOINT: raise ValueError("Error: There was an issue loading the SERP_API_ENDPOINT.")
 if not SERP_API_KEY : raise ValueError("Error: There was an issue loading the SERP_API_KEY.")
 
-
-# Google sheet data
-data = DataManager(SHEETY_ENDPOINT, SHEETY_TOKEN)
 # Flight search data
-flight_search_data = FlightSearch(SERP_API_KEY, SERP_API_ENDPOINT)
-
-
-# get the missing city and the row id from the row that are missing the IATA codes
-sheet_data = data.get_city_from_missing_IATA_records(session)
-print(sheet_data)
-
-# go through the missing city data and get the IATA codes from the serp_api flight autocomplete engine
-for item in sheet_data:
-    airport_name = item[1]
-    flight_search_results = flight_search_data.get_iata_codes(session,airport_name)
-    airport_iata_code = flight_search_results["suggestions"][0]["airports"][0]["id"]
-    item.append(airport_iata_code)
-    data.set_the_missing_IATA_codes(session, str(item[0]), airport_iata_code)
-
-print(sheet_data)
+flight_search_data = FlightSearch(SERP_API_KEY, SERP_API_ENDPOINT, session)
+# Google sheet data
+data = DataManager(SHEETY_ENDPOINT, SHEETY_TOKEN, session, flight_search_data)
+# If data is missing in the sheet go and update those data
+data.update_the_sheet_if_data_ismissing()
