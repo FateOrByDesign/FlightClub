@@ -11,11 +11,15 @@ class FlightSearch:
         query_params = {
             "engine": "google_flights_autocomplete",
             "api_key": self.serpApi_key,
-            "q": city
+            "q": city,
+            "exclude_regions" : True
         }
         response = self.session.get(url=self.serpApi_endpoint, params=query_params)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        if data.get("suggestions"):
+            return data
+        return None
 
     def get_flights_within_next_six_months(self, airport_iata):
         """Returns the flight details of the cheapest flight found for the given parameters"""
@@ -24,8 +28,13 @@ class FlightSearch:
             "api_key": self.serpApi_key,
             "departure_id": self.departure_airport_iata_code,
             "arrival_id": airport_iata,
-            "travel_mode": 1
+            "travel_mode": 1,
+            "currency": "USD"
         }
         response = self.session.get(url=self.serpApi_endpoint, params=query_params)
-        return response.json()
+        response.raise_for_status()
+        data = response.json()
+        if not data.get("flights"):
+            return None
+        return data
 

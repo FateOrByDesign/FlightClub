@@ -1,11 +1,11 @@
+import requests
 from flight_search import FlightSearch
 
 class DataManager:
     #This class is responsible for talking to the Google Sheet.
-    def __init__(self, endpoint, token, session, flight_search : FlightSearch):
+    def __init__(self, endpoint, token, flight_search : FlightSearch):
         self.sheety_endpoint = endpoint
         self.sheety_headers = {"Authorization": token}
-        self.session = session
         self.flight_search_data = flight_search
 
     def update_the_sheet_if_data_ismissing(self):
@@ -16,14 +16,15 @@ class DataManager:
         for item in sheet_data:
             airport_name = item[1]
             flight_search_results = self.flight_search_data.get_iata_codes(airport_name)
+            if not flight_search_results:
+                continue
             airport_iata_code = flight_search_results["suggestions"][0]["airports"][0]["id"]
-            item.append(airport_iata_code)
             self.set_the_missing_IATA_codes(str(item[0]), airport_iata_code)
 
 
     def get_city_from_missing_IATA_records(self):
         """Goes through the google sheet then returns the (row_id, city) of the missing IATA codes"""
-        response = self.session.get(url=self.sheety_endpoint, headers=self.sheety_headers)
+        response = requests.get(url=self.sheety_endpoint, headers=self.sheety_headers)
         response.raise_for_status()
         data = response.json()["prices"]
 
@@ -36,14 +37,13 @@ class DataManager:
 
     def set_the_missing_IATA_codes(self, row_id, iata_code):
         """Updating the sheet with the missing IATA codes"""
-        response = self.session.put(url=f"{self.sheety_endpoint}/{row_id}", headers=self.sheety_headers, json={"price": {"iataCode": iata_code}})
+        response = requests.put(url=f"{self.sheety_endpoint}/{row_id}", headers=self.sheety_headers, json={"price": {"iataCode": iata_code}})
         response.raise_for_status()
-        print(response.text)
 
 
     def return_completed_sheet_data(self):
         """Return all the sheet data fromated by city, iatacode and price"""
-        response = self.session.get(url=self.sheety_endpoint, headers=self.sheety_headers)
+        response = requests.get(url=self.sheety_endpoint, headers=self.sheety_headers)
         response.raise_for_status()
         data = response.json()["prices"]
         sheet_data = []
