@@ -20,12 +20,11 @@ class DataManager:
             item.append(airport_iata_code)
             self.set_the_missing_IATA_codes(str(item[0]), airport_iata_code)
 
-        print(sheet_data)
-
 
     def get_city_from_missing_IATA_records(self):
         """Goes through the google sheet then returns the (row_id, city) of the missing IATA codes"""
         response = self.session.get(url=self.sheety_endpoint, headers=self.sheety_headers)
+        response.raise_for_status()
         data = response.json()["prices"]
 
         rows_to_be_edited = []
@@ -38,5 +37,16 @@ class DataManager:
     def set_the_missing_IATA_codes(self, row_id, iata_code):
         """Updating the sheet with the missing IATA codes"""
         response = self.session.put(url=f"{self.sheety_endpoint}/{row_id}", headers=self.sheety_headers, json={"price": {"iataCode": iata_code}})
+        response.raise_for_status()
         print(response.text)
 
+
+    def return_completed_sheet_data(self):
+        """Return all the sheet data fromated by city, iatacode and price"""
+        response = self.session.get(url=self.sheety_endpoint, headers=self.sheety_headers)
+        response.raise_for_status()
+        data = response.json()["prices"]
+        sheet_data = []
+        for item in data:
+            sheet_data.append([item['city'], item['iataCode'], item['lowestPrice']])
+        return sheet_data

@@ -1,3 +1,4 @@
 .env
 .idea
 flight_price.cache
+__pycache__/
