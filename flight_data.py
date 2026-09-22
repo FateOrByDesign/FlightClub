@@ -7,16 +7,10 @@ class FlightData:
         self.flights = cheapest_flight_options["flights"]
         self.price_to_compare = lowest_expected_price
 
-    def get_the_cheapest_flight(self):
-        """Get the cheapest option out of the returned list"""
+    def get_the_cheapest_flight_and_compare_value(self):
+        """Get the cheapest option out of the returned list and compare with the min cost"""
         for flight in self.flights:
             if flight.get("cheapest_flight"):
                 self.flights = flight
-                return flight
-        return None
-
-    def compare_with_expected_price(self):
-        """Compare with the expected price if it's lower then, returns true"""
-        flight_details = self.get_the_cheapest_flight()
-        if flight_details:
-            return  flight_details["price"] <= self.price_to_compare
+                return self.flights["price"] <= self.price_to_compare
+        return False

@@ -1,10 +1,10 @@
 class FlightSearch:
     #This class is responsible for talking to the Flight Search API.
-    def __init__(self, api_key, api_endpoint, session):
+    def __init__(self, api_key, api_endpoint, session, departure_airport_iata_code):
         self.serpApi_key = api_key
         self.serpApi_endpoint = api_endpoint
         self.session = session
-        self.departure_airport_iata_code = "CMB"
+        self.departure_airport_iata_code = departure_airport_iata_code
 
     def get_iata_codes(self, city):
         """Get the IATA code from flight search api given the city as the query"""
@@ -14,6 +14,7 @@ class FlightSearch:
             "q": city
         }
         response = self.session.get(url=self.serpApi_endpoint, params=query_params)
+        response.raise_for_status()
         return response.json()
 
     def get_flights_within_next_six_months(self, airport_iata):
