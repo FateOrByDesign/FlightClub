@@ -38,21 +38,22 @@ data.update_the_sheet_if_data_ismissing()
 # Returns completed sheet results
 sheet_data = data.return_completed_sheet_data()
 
-destination_iata_code = sheet_data[0][1]
-lowest_expected_price = sheet_data[0][2]
+for destination in sheet_data:
+    destination_iata_code = destination[1]
+    lowest_expected_price = destination[2]
 
-# get the cheepest flight options for given iata_code within a six-month window
-cheepest_flight_options = flight_search_data.get_flights_within_next_six_months(destination_iata_code)
+    # get the cheepest flight options for given iata_code within a six-month window
+    cheepest_flight_options = flight_search_data.get_flights_within_next_six_months(destination_iata_code)
 
-# Flight data class
-flight_data = FlightData(cheepest_flight_options, lowest_expected_price)
+    # Flight data class
+    flight_data = FlightData(cheepest_flight_options, lowest_expected_price)
 
 
-# check if cheap flight available for the expected price
-if flight_data.get_the_cheapest_flight_and_compare_value():
-    # notifications manger
-    notifications = NotificationManager(flight_data, TELEGRAM_KEY, TELEGRAM_CHAT_ID)
-    notifications.send_message_via_telegram()
+    # check if cheap flight available for the expected price
+    if flight_data.get_the_cheapest_flight_and_compare_value():
+        # notifications manger
+        notifications = NotificationManager(flight_data, TELEGRAM_KEY, TELEGRAM_CHAT_ID)
+        notifications.send_message_via_telegram()
 
 
 
