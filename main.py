@@ -31,29 +31,33 @@ DEPARTURE_AIRPORT_IATA_CODE = "CMB"
 flight_search_data = FlightSearch(SERP_API_KEY, SERP_API_ENDPOINT, session, DEPARTURE_AIRPORT_IATA_CODE)
 
 # Google sheet data class
-data = DataManager(SHEETY_ENDPOINT, SHEETY_TOKEN, session, flight_search_data)
+data = DataManager(SHEETY_ENDPOINT, SHEETY_TOKEN, flight_search_data)
 # If data is missing in the sheet go and update those data
 data.update_the_sheet_if_data_ismissing()
 
 # Returns completed sheet results
 sheet_data = data.return_completed_sheet_data()
 
+# Notifications Manager
+notifications = NotificationManager(TELEGRAM_KEY, TELEGRAM_CHAT_ID)
+
 for destination in sheet_data:
     destination_iata_code = destination[1]
     lowest_expected_price = destination[2]
 
     # get the cheepest flight options for given iata_code within a six-month window
-    cheepest_flight_options = flight_search_data.get_flights_within_next_six_months(destination_iata_code)
+    cheapest_flight_options = flight_search_data.get_flights_within_next_six_months(destination_iata_code)
+    if not cheapest_flight_options:
+        continue
 
     # Flight data class
-    flight_data = FlightData(cheepest_flight_options, lowest_expected_price)
+    flight_data = FlightData(cheapest_flight_options, lowest_expected_price)
 
 
     # check if cheap flight available for the expected price
     if flight_data.get_the_cheapest_flight_and_compare_value():
-        # notifications manger
-        notifications = NotificationManager(flight_data, TELEGRAM_KEY, TELEGRAM_CHAT_ID)
-        notifications.send_message_via_telegram()
+        # send the notification
+        notifications.send_message_via_telegram(flight_data)
 
 
 
