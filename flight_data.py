@@ -6,6 +6,7 @@ class FlightData:
         self.google_flight_link = cheapest_flight_options["google_flights_link"]
         self.flights = cheapest_flight_options["flights"]
         self.flight = {}
+        self.stops = 0
         self.price_to_compare = lowest_expected_price
 
     def get_the_cheapest_flight_and_compare_value(self):
@@ -13,5 +14,6 @@ class FlightData:
         for flight in self.flights:
             if flight.get("cheapest_flight"):
                 self.flight = flight
+                self.stops = flight["number_of_stops"]
                 return self.flight["price"] <= self.price_to_compare
         return False
