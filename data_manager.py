@@ -1,10 +1,10 @@
 import requests
 from flight_search import FlightSearch
-
 class DataManager:
     #This class is responsible for talking to the Google Sheet.
-    def __init__(self, endpoint, token, flight_search : FlightSearch):
-        self.sheety_endpoint = endpoint
+    def __init__(self, endpoint_prices, endpoint_users, token, flight_search : FlightSearch):
+        self.sheety_endpoint_prices = endpoint_prices
+        self.sheety_endpoint_users = endpoint_users
         self.sheety_headers = {"Authorization": token}
         self.flight_search_data = flight_search
 
@@ -24,7 +24,7 @@ class DataManager:
 
     def get_city_from_missing_IATA_records(self):
         """Goes through the google sheet then returns the (row_id, city) of the missing IATA codes"""
-        response = requests.get(url=self.sheety_endpoint, headers=self.sheety_headers)
+        response = requests.get(url=self.sheety_endpoint_prices, headers=self.sheety_headers)
         response.raise_for_status()
         data = response.json()["prices"]
 
@@ -37,16 +37,26 @@ class DataManager:
 
     def set_the_missing_IATA_codes(self, row_id, iata_code):
         """Updating the sheet with the missing IATA codes"""
-        response = requests.put(url=f"{self.sheety_endpoint}/{row_id}", headers=self.sheety_headers, json={"price": {"iataCode": iata_code}})
+        response = requests.put(url=f"{self.sheety_endpoint_prices}/{row_id}", headers=self.sheety_headers, json={"price": {"iataCode": iata_code}})
         response.raise_for_status()
 
 
     def return_completed_sheet_data(self):
         """Return all the sheet data fromated by city, iatacode and price"""
-        response = requests.get(url=self.sheety_endpoint, headers=self.sheety_headers)
+        response = requests.get(url=self.sheety_endpoint_prices, headers=self.sheety_headers)
         response.raise_for_status()
         data = response.json()["prices"]
         sheet_data = []
         for item in data:
             sheet_data.append([item['city'], item['iataCode'], item['lowestPrice']])
         return sheet_data
+
+    def get_user_info(self):
+        """Returns the user name and email"""
+        response = requests.get(url=self.sheety_endpoint_users, headers=self.sheety_headers)
+        response.raise_for_status()
+        user_data = response.json()["users"]
+        emails = []
+        for item in user_data:
+            emails.append(item['whatIsYourEmail?'])
+        return emails
