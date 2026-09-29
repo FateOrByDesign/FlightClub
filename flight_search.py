@@ -1,4 +1,4 @@
-import requests_cache
+import requests
 
 class FlightSearch:
     #This class is responsible for talking to the Flight Search API.
@@ -6,7 +6,6 @@ class FlightSearch:
         self.serpApi_key = api_key
         self.serpApi_endpoint = api_endpoint
         self.departure_airport_iata_code = departure_airport_iata_code
-        self.session = requests_cache.CachedSession("demo_cache", expire_after=100)
 
     def get_iata_codes(self, city):
         """Get the IATA code from flight search api given the city as the query"""
@@ -16,7 +15,7 @@ class FlightSearch:
             "q": city,
             "exclude_regions" : True
         }
-        response = self.session.get(url=self.serpApi_endpoint, params=query_params)
+        response = requests.get(url=self.serpApi_endpoint, params=query_params)
         response.raise_for_status()
         data = response.json()
         if data.get("suggestions"):
@@ -39,7 +38,7 @@ class FlightSearch:
             "currency": "USD",
             "stops": num_of_stops
         }
-        response = self.session.get(url=self.serpApi_endpoint, params=query_params)
+        response = requests.get(url=self.serpApi_endpoint, params=query_params)
         response.raise_for_status()
         flight_search_data = response.json()
 
